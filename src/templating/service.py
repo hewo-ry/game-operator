@@ -1,12 +1,13 @@
-from dataclasses import dataclass, asdict, field
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 
-import yaml
 import kopf
+import yaml
 
 from templating import Protocol
-from utils import keys_to_camel, ommit_none
 from templating.yaml_templates import node_port_service_template
+from utils import keys_to_camel, ommit_none
+
 
 class ServiceType(str, Enum):
     NodePort = "NodePort"
@@ -15,12 +16,14 @@ class ServiceType(str, Enum):
     def __str__(self) -> str:
         return self.value
 
+
 @dataclass
 class NodePort:
     name: str
     port: int
     protocol: Protocol = Protocol.TCP
     target_port: int | str | None = None
+
 
 @dataclass
 class Service:
