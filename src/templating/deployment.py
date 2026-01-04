@@ -1,20 +1,23 @@
+from dataclasses import asdict, dataclass, field
+from enum import Enum
+from typing import Any
+
 import kopf
 import yaml
-from dataclasses import dataclass, asdict, field
-from typing import Any
-from enum import Enum
 
-from utils import keys_to_camel, ommit_none
-from templating.yaml_templates import deployment_template
 from templating import Protocol
+from templating.yaml_templates import deployment_template
+from utils import keys_to_camel, ommit_none
+
 
 class RestartPolicy(str, Enum):
-    ALWAYS = 'Always'
-    ON_FAILURE = 'OnFailure'
-    NEVER = 'Never'
+    ALWAYS = "Always"
+    ON_FAILURE = "OnFailure"
+    NEVER = "Never"
 
     def __str__(self) -> str:
         return self.value
+
 
 @dataclass
 class VolumeMount:
@@ -22,25 +25,30 @@ class VolumeMount:
     name: str
     read_only: bool | None = None
 
+
 @dataclass
 class PersistentVolumeClaim:
     claim_name: str
     read_only: bool | None = None
+
 
 @dataclass
 class Volume:
     name: str
     persistent_volume_claim: PersistentVolumeClaim
 
+
 @dataclass
 class Resources:
     memory: str
     cpu: str
 
+
 @dataclass
 class ResourceConfig:
     requests: Resources | None = None
     limits: Resources | None = None
+
 
 @dataclass
 class PortConfig:
@@ -50,6 +58,7 @@ class PortConfig:
     host_port: int | None = None
     host_ip: str | None = None
 
+
 @dataclass
 class ContainerConfig:
     name: str
@@ -58,6 +67,7 @@ class ContainerConfig:
     resources: ResourceConfig | None = None
     volume_mounts: list[VolumeMount] | None = None
     env_from: list = field(default_factory=list)
+
 
 @dataclass
 class DeploymentConfig:
@@ -78,35 +88,28 @@ class DeploymentConfig:
                     name=f"{name}-server",
                     image=f"itzg/minecraft-server:{('java' + spec['javaVersion']) if 'javaVersion' in spec else 'latest'}",
                     volume_mounts=[
-                        VolumeMount(
-                            mount_path='/data',
-                            name='server-data-volume'
-                        )
+                        VolumeMount(mount_path="/data", name="server-data-volume")
                     ],
                     env_from=[
                         {"configMapRef": {"name": f"{name}-config"}},
-                        {"secretRef": {"name": f"{name}-secret"}}
+                        {"secretRef": {"name": f"{name}-secret"}},
                     ],
                     ports=[
-                        PortConfig(
-                            25565, "minecraft", Protocol.TCP
-                        ),
-                        PortConfig(
-                            25565, "query", Protocol.UDP
-                        )
-                    ]
+                        PortConfig(25565, "minecraft", Protocol.TCP),
+                        PortConfig(25565, "query", Protocol.UDP),
+                    ],
                 )
             ],
             volumes=[
                 Volume(
-                    name='server-data-volume',
+                    name="server-data-volume",
                     persistent_volume_claim=PersistentVolumeClaim(
                         claim_name=f"{name}-data"
-                    )
+                    ),
                 )
             ],
         )
-    
+
     def to_deployment(self, labels: dict[str, str] | None = None):
         data = keys_to_camel(ommit_none(asdict(self)))
         if not isinstance(data, dict):

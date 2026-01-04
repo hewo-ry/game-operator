@@ -1,11 +1,13 @@
-from dataclasses import dataclass, field, fields, asdict
-from typing import Any
 import random
 import string
+from dataclasses import asdict, dataclass, field, fields
+from typing import Any
+
 import yaml
 
-from utils import ommit_none, ommit_empty
 from templating.yaml_templates import config_map_template, secret_template
+from utils import ommit_empty, ommit_none
+
 
 @dataclass
 class MinecraftServerConfig:
@@ -48,10 +50,9 @@ class MinecraftServerConfig:
             "ENABLE_WHITELIST": spec.get("whitelist"),
             "VERSION": spec.get("version"),
             "TZ": spec.get("timeZone"),
-            "LEVEL": spec.get("level")
+            "LEVEL": spec.get("level"),
         }
         return MinecraftServerConfig(**items)
-        
 
     def to_env(self) -> dict[str, str]:
         env_dict: dict[str, str] = {}
@@ -70,7 +71,12 @@ class MinecraftServerConfig:
         env_dict.update(self.extra_env)
         return ommit_empty(ommit_none(env_dict))
 
-    def to_config_map(self, name: str, namespace: str = "default", labels: dict[str, str] | None = None):
+    def to_config_map(
+        self,
+        name: str,
+        namespace: str = "default",
+        labels: dict[str, str] | None = None,
+    ):
         tmpl = yaml.safe_load(config_map_template)
         tmpl["metadata"]["name"] = name
         tmpl["metadata"]["namespace"] = namespace
@@ -78,16 +84,21 @@ class MinecraftServerConfig:
         tmpl["data"] = self.to_env()
         return tmpl
 
+
 @dataclass
 class MinecraftServerSecrets:
-
     @staticmethod
     def generate_rcon_password(length: int = 32) -> str:
-        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+        return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
     RCON_PASSWORD: str = generate_rcon_password()
 
-    def to_secret(self, name: str, namespace: str = "default", labels: dict[str, str] | None = None):
+    def to_secret(
+        self,
+        name: str,
+        namespace: str = "default",
+        labels: dict[str, str] | None = None,
+    ):
         tmpl = yaml.safe_load(secret_template)
         tmpl["metadata"]["name"] = name
         tmpl["metadata"]["namespace"] = namespace
