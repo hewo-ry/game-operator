@@ -4,6 +4,7 @@
         "ms-python.vscode-python-envs",
         "ms-python.python",
         "github.vscode-github-actions",
+        "editorconfig.editorconfig",
         "charliermarsh.ruff"
     ]
 }
