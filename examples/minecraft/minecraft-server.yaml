@@ -1,0 +1,17 @@
+apiVersion: hellshade.fi/v1
+kind: MinecraftServer
+metadata:
+  name: my-minecraft-server
+spec:
+  serverConfig:
+    version: "1.21.11"
+    memory: "2G"
+    maxMemory: "4G"
+    maxPlayers: 2
+    motd: "Welcome to My Minecraft Server!"
+    serverType: "purpur"
+    timeZone: "Europe/Helsinki"
+    level: "examplecaft"
+  storage:
+    class: "local-path"
+    size: "5Gi"

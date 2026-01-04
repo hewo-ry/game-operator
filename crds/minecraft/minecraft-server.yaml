@@ -1,0 +1,144 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: minecraftservers.hellshade.fi
+spec:
+  scope: Namespaced
+  group: hellshade.fi
+  names:
+    kind: MinecraftServer
+    plural: minecraftservers
+    singular: minecraftserver
+    shortNames:
+      - mcserver
+      - mcs
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                serverConfig:
+                  type: object
+                  description: "Minecraft server configuration"
+                  properties:
+                    name:
+                      type: string
+                      description: "Minecraft server name"
+                      default: "A Minecraft Server"
+                    version:
+                      type: string
+                      description: "Minecraft server version (e.g., '1.16.5', '1.18.2')"
+                      pattern: (^\d+\.\d+(\.\d+)?$)|(^\d+w\d+.*$)|(^\d+\.\d+-snapshot-\d+$)
+                    memory:
+                      type: string
+                      description: "Amount of memory allocated to the server (e.g., '2G', '4G')"
+                      pattern: ^(\d+)(M|G|T)$
+                      default: "2G"
+                    maxMemory:
+                      type: string
+                      description: "Amount of maximum memory allocated to the server (e.g., '2G', '4G')"
+                      pattern: ^(\d+)(M|G|T)$
+                      default: "2G"
+                    maxPlayers:
+                      type: integer
+                      description: "Maximum number of players allowed on the server"
+                      minimum: 1
+                      default: 10
+                    motd:
+                      type: string
+                      description: "Message of the day displayed to players on join"
+                      default: "A Minecraft Server"
+                    whitelist:
+                      type: boolean
+                      description: "Enable or disable the player whitelist"
+                      default: false
+                    serverType:
+                      type: string
+                      description: "Type of Minecraft server (e.g., 'vanilla', 'spigot', 'paper')"
+                      enum:
+                        - vanilla
+                        - spigot
+                        - fabric
+                        - forge
+                        - paper
+                        - purpur
+                      default: vanilla
+                    javaVersion:
+                      type: string
+                      description: "Java version to run the server"
+                      pattern: ^(latest)|(stable)|(\d+(-((jdk)|(alpine)|(graalvm)))?)$
+                      default: "25-graalvm"
+                    timeZone:
+                      type: string
+                      description: "Timezone of server"
+                      default: "UTC"
+                    level:
+                      type: string
+                      description: "Minecraft level name"
+                      default: "world"
+                    rcon:
+                      type: object
+                      description: "RCON configuration for remote server management"
+                      properties:
+                        enabled:
+                          type: boolean
+                          description: "Enable or disable RCON"
+                          default: true
+                        port:
+                          type: integer
+                          description: "RCON port number"
+                          minimum: 1024
+                          maximum: 65535
+                          default: 25575
+                storage:
+                  type: object
+                  description: "Persistent storage configuration"
+                  properties:
+                    class:
+                      type: string
+                      description: "Storage class for the server's persistent volume"
+                      default: "local-path"
+                    size:
+                      type: string
+                      description: "Size of the persistent volume for server data"
+                      pattern: ^(\d+(\.\d+)?)(Mi|Gi|Ti)$
+                      default: "10Gi"
+      additionalPrinterColumns:
+        - name: Name
+          type: string
+          description: "Minecraft server name"
+          jsonPath: .spec.serverConfig.name
+        - name: Version
+          type: string
+          description: "Minecraft server version"
+          jsonPath: .spec.serverConfig.version
+        - name: Memory
+          type: string
+          description: "Allocated memory"
+          jsonPath: .spec.serverConfig.memory
+        - name: Max Players
+          type: integer
+          description: "Maximum players"
+          jsonPath: .spec.serverConfig.maxPlayers
+        - name: Whitelist
+          type: boolean
+          description: "Whitelist enabled"
+          jsonPath: .spec.serverConfig.whitelist
+        - name: Server Type
+          type: string
+          description: "Type of server"
+          jsonPath: .spec.serverConfig.serverType
+        - name: Java Version
+          type: string
+          description: "Java version"
+          jsonPath: .spec.serverConfig.javaVersion
+        - name: Storage Size
+          type: string
+          description: "Persistent volume size"
+          jsonPath: .spec.storageSize
